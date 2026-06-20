@@ -2,202 +2,229 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Drawdown - Panel Institucional</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <title>Dashboard de Drawdown</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    
     <style>
-        body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #FAFAFA;
-            color: #333;
-            margin: 0;
-            padding: 40px;
+        body { 
+            font-family: sans-serif; 
+            background-color: #f4f4f9; 
+            display: flex; 
+            justify-content: center; 
+            padding-top: 30px; 
+            margin: 0; 
+        }
+        .dashboard-container { 
+            width: 100%; 
+            max-width: 1200px; /* Aumentado para dar más espacio horizontal */
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        .header-section {
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start; /* Alinea el título y menú a la izquierda */
+            margin-bottom: 20px;
         }
-        .dashboard-container {
-            width: 100%;
-            max-width: 1200px;
-            background: #FFFFFF;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        h2 { 
+            color: #333; 
+            margin: 0 0 15px 0; 
         }
-        .controles {
-            margin-bottom: 30px;
-        }
-        select {
-            padding: 12px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            outline: none;
-            width: 300px;
+        select { 
+            width: 250px; /* Cajón pequeño, no ocupa todo el ancho */
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            font-size: 15px;
             cursor: pointer;
         }
-        /* Contenedor responsivo para la gráfica */
+        #metricasPanel { 
+            margin-top: 20px; 
+            padding: 15px; 
+            background: #eef2f7; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            text-align: center;
+        }
+        /* Controla la altura máxima para que la gráfica no se deforme al estirarse */
         .grafica-wrapper {
             position: relative;
-            height: 500px;
+            height: 500px; 
             width: 100%;
         }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
+<div class="dashboard-container">
+    <div class="header-section">
         <h2>Curva de Drawdown Histórico</h2>
-        
-        <div class="controles">
-            <select id="configSelector" onchange="actualizarGrafica()">
-                <option value="" selected disabled>-- Selecciona un Código --</option>
-                <option value="TC13-C101">TC13-C101</option>
-                <option value="TC13-C102">TC13-C102</option>
-                <option value="TC13-C103">TC13-C103</option>
-                <option value="TC13-C104">TC13-C104</option>
-                <option value="TC13-C105">TC13-C105</option>
-                <option value="TC13-C106">TC13-C106</option>
-                <option value="TC13-C107">TC13-C107</option>
-                <option value="TC13-C108">TC13-C108</option>
-                <option value="TC13-C109">TC13-C109</option>
-                <option value="TC13-C110">TC13-C110</option>
-                <option value="TC13-C111">TC13-C111</option>
-                <option value="TC13-C112">TC13-C112</option>
-                <option value="TC13-C113">TC13-C113</option>
-                <option value="TC13-C114">TC13-C114</option>
-                <option value="TC13-C115">TC13-C115</option>
-                <option value="TC13-C116">TC13-C116</option>
-                <option value="TC13-C117">TC13-C117</option>
-                <option value="TC13-C118">TC13-C118</option>
-                <option value="TC13-C119">TC13-C119</option>
-                <option value="TC13-C120">TC13-C120</option>
-                <option value="TC13-D121">TC13-D121</option>
-                <option value="TC13-D122">TC13-D122</option>
-                <option value="TC13-D123">TC13-D123</option>
-                <option value="TC13-D124">TC13-D124</option>
-                <option value="TC13-D125">TC13-D125</option>
-                <option value="TC13-D126">TC13-D126</option>
-                <option value="TC13-D127">TC13-D127</option>
-                <option value="TC13-D128">TC13-D128</option>
-                <option value="TC13-D129">TC13-D129</option>
-                <option value="TC13-D130">TC13-D130</option>
-                <option value="TC13-D131">TC13-D131</option>
-                <option value="TC13-D132">TC13-D132</option>
-                <option value="TC13-D133">TC13-D133</option>
-                <option value="TC13-D134">TC13-D134</option>
-                <option value="TC13-D135">TC13-D135</option>
-                <option value="TC13-D136">TC13-D136</option>
-                <option value="TC13-D137">TC13-D137</option>
-                <option value="TC13-D138">TC13-D138</option>
-                <option value="TC13-D139">TC13-D139</option>
-                <option value="TC13-D140">TC13-D140</option>
-                <option value="TC13-D141">TC13-D141</option>
-                <option value="TC13-D142">TC13-D142</option>
-                <option value="TC13-D143">TC13-D143</option>
-                <option value="TC13-D144">TC13-D144</option>
-                <option value="TC13-D145">TC13-D145</option>
-                <option value="TC13-D146">TC13-D146</option>
-                <option value="TC13-D147">TC13-D147</option>
-                <option value="TC13-D148">TC13-D148</option>
-                <option value="TC13-D149">TC13-D149</option>
-                <option value="TC13-D150">TC13-D150</option>
-                </select>
-        </div>
-
-        <div class="grafica-wrapper">
-            <canvas id="graficaDD"></canvas>
-        </div>
+        <select id="configSelector" onchange="actualizarGrafica()">
+            <option value="" selected disabled>-- Selecciona un Código --</option>
+            <option value="TC13-C101">TC13-C101</option>
+            <option value="TC13-C102">TC13-C102</option>
+            <option value="TC13-C103">TC13-C103</option>
+            <option value="TC13-C104">TC13-C104</option>
+            <option value="TC13-C105">TC13-C105</option>
+            <option value="TC13-C106">TC13-C106</option>
+            <option value="TC13-C107">TC13-C107</option>
+            <option value="TC13-C108">TC13-C108</option>
+            <option value="TC13-C109">TC13-C109</option>
+            <option value="TC13-C110">TC13-C110</option>
+            <option value="TC13-C111">TC13-C111</option>
+            <option value="TC13-C112">TC13-C112</option>
+            <option value="TC13-C113">TC13-C113</option>
+            <option value="TC13-C114">TC13-C114</option>
+            <option value="TC13-C115">TC13-C115</option>
+            <option value="TC13-C116">TC13-C116</option>
+            <option value="TC13-C117">TC13-C117</option>
+            <option value="TC13-C118">TC13-C118</option>
+            <option value="TC13-C119">TC13-C119</option>
+            <option value="TC13-C120">TC13-C120</option>
+            <option value="TC13-D121">TC13-D121</option>
+            <option value="TC13-D122">TC13-D122</option>
+            <option value="TC13-D123">TC13-D123</option>
+            <option value="TC13-D124">TC13-D124</option>
+            <option value="TC13-D125">TC13-D125</option>
+            <option value="TC13-D126">TC13-D126</option>
+            <option value="TC13-D127">TC13-D127</option>
+            <option value="TC13-D128">TC13-D128</option>
+            <option value="TC13-D129">TC13-D129</option>
+            <option value="TC13-D130">TC13-D130</option>
+            <option value="TC13-D131">TC13-D131</option>
+            <option value="TC13-D132">TC13-D132</option>
+            <option value="TC13-D133">TC13-D133</option>
+            <option value="TC13-D134">TC13-D134</option>
+            <option value="TC13-D135">TC13-D135</option>
+            <option value="TC13-D136">TC13-D136</option>
+            <option value="TC13-D137">TC13-D137</option>
+            <option value="TC13-D138">TC13-D138</option>
+            <option value="TC13-D139">TC13-D139</option>
+            <option value="TC13-D140">TC13-D140</option>
+            <option value="TC13-D141">TC13-D141</option>
+            <option value="TC13-D142">TC13-D142</option>
+            <option value="TC13-D143">TC13-D143</option>
+            <option value="TC13-D144">TC13-D144</option>
+            <option value="TC13-D145">TC13-D145</option>
+            <option value="TC13-D146">TC13-D146</option>
+            <option value="TC13-D147">TC13-D147</option>
+            <option value="TC13-D148">TC13-D148</option>
+            <option value="TC13-D149">TC13-D149</option>
+            <option value="TC13-D150">TC13-D150</option>
+            </select>
     </div>
+    
+    <div class="grafica-wrapper">
+        <canvas id="miGrafica"></canvas>
+    </div>
+    
+    <div id="metricasPanel">
+        <strong>Métricas del Modelo:</strong> Sharpe: <span id="valSharpe">-</span> | Profit Factor: <span id="valPF">-</span> | Calmar: <span id="valCalmar">-</span>
+    </div>
+</div>
 
-    <script>
-        let miGrafica;
+<script>
+    Chart.register(window['chartjs-plugin-annotation']);
+    let miGrafica;
 
-        // 1. INICIALIZAR LA GRÁFICA (Estilo Hedge Fund)
-        function iniciarGrafica() {
-            const ctx = document.getElementById('graficaDD').getContext('2d');
-            
-            miGrafica = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [], // Inicia vacío
-                    datasets: [{
-                        label: 'Drawdown (%)',
-                        data: [], // Inicia vacío
-                        borderColor: '#D32F2F', // Rojo elegante
-                        backgroundColor: 'rgba(211, 47, 47, 0.05)', // Sombra roja muy suave
-                        borderWidth: 1.5,
-                        fill: true,
-                        tension: 0.1, // Curva ligeramente suavizada
-                        pointRadius: 0, // <-- LA MAGIA 1: Oculta los puntos para que no sature la vista
-                        pointHoverRadius: 5 // Solo aparece el punto cuando pasas el mouse por encima
-                    }]
+    function iniciarGrafica() {
+        const ctx = document.getElementById('miGrafica').getContext('2d');
+        miGrafica = new Chart(ctx, {
+            type: 'line',
+            data: { labels: [], datasets: [{ 
+                label: 'Drawdown', 
+                data: [], 
+                borderColor: '#D32F2F', 
+                backgroundColor: 'rgba(211, 47, 47, 0.1)', // Sombra roja muy suave
+                fill: true, 
+                tension: 0.1, 
+                borderWidth: 1.5,
+                /* Configuración exacta de los puntos flotantes (Hover) */
+                pointRadius: 0, 
+                pointHoverRadius: 5,
+                /*pointHoverBackgroundColor: 'red', */
+                /*pointHoverBorderColor: '#ffffff', */
+                /*pointHoverBorderWidth: 2 */
+            }]},
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, /* Permite que el CSS controle el tamaño */
+                interaction: {
+                    mode: 'index',
+                    intersect: false, /* Facilita que el punto aparezca sin estar exactamente sobre él */
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false, // Facilita ver el dato al pasar el mouse cerca
-                    },
-                    plugins: {
-                        legend: { display: false } // Oculta la leyenda superior para más limpieza
-                    },
-                    scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { 
+                scales: { 
+                    x: { 
+                        grid: { display: false }, /* Sin líneas verticales */
+                        ticks: { 
                                 color: '#888',
                                 maxTicksLimit: 12, // <-- LA MAGIA 2: Nunca mostrará más de 12 fechas en el eje X
                                 autoSkip: true // Se salta fechas inteligentemente
-                            }
+                                }
+                    }, 
+                    y: { 
+                        grid: { 
+                            display: true, /* Reactiva las líneas horizontales */
+                            color: '#e0e0e0'
                         },
-                        y: {
-                            max: 0, // El Drawdown nunca es positivo
-                            grid: { color: '#E0E0E0' },
-                            ticks: {
-                                color: '#888',
-                                callback: function(value) { return value + '%'; }
+                        ticks: { 
+                            callback: function(value) { return value + '%'; }
+                        } 
+                    } 
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ' Drawdown: ' + context.parsed.y + '%';
+                            }
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            threshold: {
+                                type: 'line', 
+                                yMin: -10, 
+                                yMax: -10,
+                                borderColor: 'black', 
+                                borderWidth: 1.5, 
+                                borderDash: [5, 5],
+                                label: { 
+                                    display: true, 
+                                    content: 'Risk Tolerance (-10%)', 
+                                    position: 'start', 
+                                    backgroundColor: 'transparent', 
+                                    color: 'black',
+                                    yAdjust: -12, /* Eleva el texto sobre la línea */
+                                    font: { weight: 'bold' }
+                                }
                             }
                         }
                     }
                 }
-            });
-        }
-
-        // 2. LA NUEVA FUNCIÓN MÁGICA ASÍNCRONA
-        async function actualizarGrafica() {
-            const seleccion = document.getElementById("configSelector").value;
-            if (!seleccion) return; // Si no hay nada seleccionado, abortar.
-
-            try {
-                // Va a la carpeta "datos" y busca el archivo con el nombre exacto seleccionado
-                const respuesta = await fetch(`datos/${seleccion}.json`);
-                
-                // Si escribiste mal el nombre o el archivo no existe, lanza un error
-                if (!respuesta.ok) throw new Error("No se encontró el archivo");
-
-                // Convierte la respuesta a formato JSON
-                const dataJson = await respuesta.json();
-
-                // Inyecta la data nueva en la gráfica
-                miGrafica.data.labels = dataJson.fechas;
-                miGrafica.data.datasets[0].data = dataJson.drawdown;
-                
-                // Pide a Chart.js que dibuje la actualización con una transición fluida
-                miGrafica.update();
-
-            } catch (error) {
-                console.error("Error al cargar los datos:", error);
-                alert("Error: No se pudo cargar la data de la configuración " + seleccion + ". Verifica que el archivo .json exista en la carpeta 'datos'.");
             }
-        }
+        });
+    }
 
-        // Arranca la gráfica en blanco cuando la página termina de cargar
-        window.onload = iniciarGrafica;
-    </script>
+    async function actualizarGrafica() {
+        const seleccion = document.getElementById("configSelector").value;
+        try {
+            const respuesta = await fetch(`datos/${seleccion}.json`);
+            const dataJson = await respuesta.json();
+            miGrafica.data.labels = dataJson.fechas;
+            miGrafica.data.datasets[0].data = dataJson.drawdown;
+            miGrafica.update();
+            document.getElementById('valSharpe').innerText = dataJson.metricas.sharpe;
+            document.getElementById('valPF').innerText = dataJson.metricas.profit_factor;
+            document.getElementById('valCalmar').innerText = dataJson.metricas.calmar;
+        } catch(e) { console.error("Error cargando datos", e); }
+    }
 
+    window.onload = iniciarGrafica;
+</script>
 </body>
 </html>
