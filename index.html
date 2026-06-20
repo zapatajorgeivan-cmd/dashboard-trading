@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard de Drawdown</title>
+    <title>Dashboard Institucional</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
     
@@ -17,24 +17,30 @@
         }
         .dashboard-container { 
             width: 100%; 
-            max-width: 1200px; /* Aumentado para dar más espacio horizontal */
+            max-width: 1200px; 
             background: #fff; 
             padding: 30px; 
             border-radius: 8px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+            margin-bottom: 50px;
         }
         .header-section {
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Alinea el título y menú a la izquierda */
+            align-items: flex-start;
             margin-bottom: 20px;
         }
         h2 { 
             color: #333; 
             margin: 0 0 15px 0; 
         }
+        .chart-title {
+            color: #555;
+            margin: 30px 0 10px 0;
+            font-size: 1.2rem;
+        }
         select { 
-            width: 250px; /* Cajón pequeño, no ocupa todo el ancho */
+            width: 250px; 
             padding: 12px; 
             border-radius: 6px; 
             border: 1px solid #ccc; 
@@ -42,17 +48,16 @@
             cursor: pointer;
         }
         #metricasPanel { 
-            margin-top: 20px; 
+            margin: 25px 0; 
             padding: 15px; 
             background: #eef2f7; 
             border-radius: 8px; 
             font-size: 14px; 
             text-align: center;
         }
-        /* Controla la altura máxima para que la gráfica no se deforme al estirarse */
         .grafica-wrapper {
             position: relative;
-            height: 500px; 
+            height: 400px; /* Ajustado levemente para que quepan ambas en pantallas comunes */
             width: 100%;
         }
     </style>
@@ -61,7 +66,7 @@
 
 <div class="dashboard-container">
     <div class="header-section">
-        <h2>Curva de Drawdown Histórico</h2>
+        <h2>Panel de Rendimiento Algorítmico</h2>
         <select id="configSelector" onchange="actualizarGrafica()">
             <option value="" selected disabled>-- Selecciona un Código --</option>
             <option value="TC13-C101">TC13-C101</option>
@@ -114,23 +119,34 @@
             <option value="TC13-D148">TC13-D148</option>
             <option value="TC13-D149">TC13-D149</option>
             <option value="TC13-D150">TC13-D150</option>
-            </select>
+        </select>
     </div>
     
+    <!-- Gráfica 1: Drawdown -->
+    <h3 class="chart-title">Curva de Drawdown Histórico</h3>
     <div class="grafica-wrapper">
         <canvas id="miGrafica"></canvas>
     </div>
     
+    <!-- Métricas (Posicionadas en el medio) -->
     <div id="metricasPanel">
         <strong>Métricas del Modelo:</strong> Sharpe: <span id="valSharpe">-</span> | Profit Factor: <span id="valPF">-</span> | Calmar: <span id="valCalmar">-</span>
+    </div>
+
+    <!-- Gráfica 2: Equity Curve -->
+    <h3 class="chart-title">Equity Curve/Curva de Capital real</h3>
+    <div class="grafica-wrapper">
+        <canvas id="graficaEquity"></canvas>
     </div>
 </div>
 
 <script>
     Chart.register(window['chartjs-plugin-annotation']);
     let miGrafica;
+    let miGraficaEquity;
 
-    function iniciarGrafica() {
+    function iniciarGraficas() {
+        // Inicializar Gráfica de Drawdown
         const ctx = document.getElementById('miGrafica').getContext('2d');
         miGrafica = new Chart(ctx, {
             type: 'line',
@@ -138,70 +154,65 @@
                 label: 'Drawdown', 
                 data: [], 
                 borderColor: '#D32F2F', 
-                backgroundColor: 'rgba(211, 47, 47, 0.1)', // Sombra roja muy suave
-                fill: true, 
-                tension: 0.1, 
-                borderWidth: 1.5,
-                /* Configuración exacta de los puntos flotantes (Hover) */
-                pointRadius: 0, 
-                pointHoverRadius: 5,
-                /*pointHoverBackgroundColor: 'red', */
-                /*pointHoverBorderColor: '#ffffff', */
-                /*pointHoverBorderWidth: 2 */
+                backgroundColor: 'rgba(211, 47, 47, 0.1)', 
+                fill: true, tension: 0.1, borderWidth: 1.5,
+                pointRadius: 0, pointHoverRadius: 5
             }]},
             options: {
                 responsive: true,
-                maintainAspectRatio: false, /* Permite que el CSS controle el tamaño */
-                interaction: {
-                    mode: 'index',
-                    intersect: false, /* Facilita que el punto aparezca sin estar exactamente sobre él */
-                },
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 scales: { 
-                    x: { 
-                        grid: { display: false }, /* Sin líneas verticales */
-                        ticks: { 
-                                color: '#888',
-                                maxTicksLimit: 12, // <-- LA MAGIA 2: Nunca mostrará más de 12 fechas en el eje X
-                                autoSkip: true // Se salta fechas inteligentemente
-                                }
-                    }, 
+                    x: { grid: { display: false }, ticks: { color: '#888', maxTicksLimit: 12, autoSkip: true } }, 
+                    y: { grid: { display: true, color: '#e0e0e0' }, ticks: { callback: function(value) { return value + '%'; } } } 
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: function(ctx) { return ' Drawdown: ' + ctx.parsed.y + '%'; } } },
+                    annotation: {
+                        annotations: {
+                            threshold: {
+                                type: 'line', yMin: -10, yMax: -10, borderColor: 'black', borderWidth: 1.5, borderDash: [5, 5],
+                                label: { display: true, content: 'Risk Tolerance (-10%)', position: 'start', backgroundColor: 'transparent', color: 'black', yAdjust: -12, font: { weight: 'bold' } }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Inicializar Gráfica de Equity Curve
+        const ctxEq = document.getElementById('graficaEquity').getContext('2d');
+        miGraficaEquity = new Chart(ctxEq, {
+            type: 'line',
+            data: { labels: [], datasets: [{ 
+                label: 'Capital USDT', 
+                data: [], 
+                borderColor: '#1565C0', // Azul Institucional
+                backgroundColor: 'rgba(21, 101, 192, 0.1)', 
+                fill: true, tension: 0.1, borderWidth: 1.5,
+                pointRadius: 0, pointHoverRadius: 5
+            }]},
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: { 
+                    x: { grid: { display: false }, ticks: { color: '#888', maxTicksLimit: 12, autoSkip: true } }, 
                     y: { 
-                        grid: { 
-                            display: true, /* Reactiva las líneas horizontales */
-                            color: '#e0e0e0'
-                        },
-                        ticks: { 
-                            callback: function(value) { return value + '%'; }
-                        } 
+                        min: 0, // Exigencia: Visible desde 0
+                        grid: { display: true, color: '#e0e0e0' }, 
+                        ticks: { stepSize: 2000 } // Exigencia: Subir de 2000 en 2000
                     } 
                 },
                 plugins: {
                     legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return ' Drawdown: ' + context.parsed.y + '%';
-                            }
-                        }
-                    },
+                    tooltip: { callbacks: { label: function(ctx) { return ' Capital: ' + ctx.parsed.y.toLocaleString('en-US') + ' USDT'; } } },
                     annotation: {
                         annotations: {
-                            threshold: {
-                                type: 'line', 
-                                yMin: -10, 
-                                yMax: -10,
-                                borderColor: 'black', 
-                                borderWidth: 1.5, 
-                                borderDash: [5, 5],
-                                label: { 
-                                    display: true, 
-                                    content: 'Risk Tolerance (-10%)', 
-                                    position: 'start', 
-                                    backgroundColor: 'transparent', 
-                                    color: 'black',
-                                    yAdjust: -12, /* Eleva el texto sobre la línea */
-                                    font: { weight: 'bold' }
-                                }
+                            baseCapital: {
+                                type: 'line', yMin: 10000, yMax: 10000, borderColor: 'black', borderWidth: 1.5, borderDash: [5, 5]
+                                // Exigencia: Sin texto en esta línea
                             }
                         }
                     }
@@ -215,16 +226,25 @@
         try {
             const respuesta = await fetch(`datos/${seleccion}.json`);
             const dataJson = await respuesta.json();
+            
+            // Actualizar Drawdown
             miGrafica.data.labels = dataJson.fechas;
             miGrafica.data.datasets[0].data = dataJson.drawdown;
             miGrafica.update();
+            
+            // Actualizar Equity
+            miGraficaEquity.data.labels = dataJson.fechas;
+            miGraficaEquity.data.datasets[0].data = dataJson.equity;
+            miGraficaEquity.update();
+            
+            // Actualizar Panel
             document.getElementById('valSharpe').innerText = dataJson.metricas.sharpe;
             document.getElementById('valPF').innerText = dataJson.metricas.profit_factor;
             document.getElementById('valCalmar').innerText = dataJson.metricas.calmar;
         } catch(e) { console.error("Error cargando datos", e); }
     }
 
-    window.onload = iniciarGrafica;
+    window.onload = iniciarGraficas;
 </script>
 </body>
 </html>
