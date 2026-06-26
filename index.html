@@ -2,74 +2,37 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Institucional</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <title>Panel Cuantitativo - Alta Frecuencia</title>
+    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
     
     <style>
-        body { 
-            font-family: sans-serif; 
-            background-color: #f4f4f9; 
-            display: flex; 
-            justify-content: center; 
-            padding-top: 30px; 
-            margin: 0; 
-        }
-        .dashboard-container { 
-            width: 100%; 
-            max-width: 1200px; 
-            background: #fff; 
-            padding: 30px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            margin-bottom: 50px;
-        }
-        .header-section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        h2 { 
-            color: #333; 
-            margin: 0 0 15px 0; 
-        }
-        .chart-title {
-            color: #555;
-            margin: 30px 0 10px 0;
-            font-size: 1.2rem;
-        }
-        select { 
-            width: 250px; 
-            padding: 12px; 
-            border-radius: 6px; 
-            border: 1px solid #ccc; 
-            font-size: 15px;
-            cursor: pointer;
-        }
-        #metricasPanel { 
-            margin: 25px 0; 
-            padding: 15px; 
-            background: #eef2f7; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            text-align: center;
-        }
-        .grafica-wrapper {
-            position: relative;
-            height: 400px; /* Ajustado levemente para que quepan ambas en pantallas comunes */
-            width: 100%;
-        }
+        body { font-family: sans-serif; background-color: #1e222d; color: #d1d4dc; display: flex; justify-content: center; padding-top: 30px; margin: 0;}
+        .dashboard-container { width: 95%; max-width: 1200px; background: #131722; padding: 30px; border-radius: 8px; border: 1px solid #2a2e39; margin-bottom: 50px;}
+        .header-section { display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 20px;}
+        .controles-izq, .controles-der { display: flex; flex-direction: column; }
+        h2 { margin: 0 0 5px 0; font-weight: 300; color: #ffffff;}
+        .instruccion-presentador { color: #ffeb3b; font-size: 12px; margin-bottom: 15px; font-style: italic; }
+        .chart-title { color: #8a919e; margin: 30px 0 10px 0; font-size: 1.1rem; font-weight: normal;}
+        
+        select { width: 250px; padding: 12px; border-radius: 6px; border: 1px solid #2a2e39; background-color: #1e222d; color: #d1d4dc; font-size: 15px; cursor: pointer; }
+        select:focus { outline: none; border-color: #2962FF; }
+        label { margin-bottom: 8px; font-size: 13px; color: #8a919e; text-transform: uppercase; letter-spacing: 1px;}
+        
+        #metricasPanel { margin: 20px 0; padding: 15px; background: #1e222d; border-radius: 8px; border: 1px solid #2a2e39; font-size: 15px; text-align: center; color: #d1d4dc;}
+        .caja-grafica { width: 100%; height: 400px; position: relative; border: 1px solid #2a2e39; border-radius: 4px; background-color: #131722;}
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
     <div class="header-section">
-        <h2>Panel de Rendimiento Algorítmico</h2>
-        <select id="configSelector" onchange="actualizarGrafica()">
-            <option value="" selected disabled>-- Selecciona un Código --</option>
-            <option value="TC13-C101">TC13-C101</option>
+        <div class="controles-izq">
+            <h2>Panel de Rendimiento Algorítmico</h2>
+            <div class="instruccion-presentador">💡 Tip de Presentación: Mantén presionada la tecla SHIFT y haz clic en la gráfica para trazar líneas manuales.</div>
+            <label>Modelo Operativo</label>
+            <select id="configSelector" onchange="actualizarGrafica()">
+                <option value="" selected disabled>-- Selecciona un Código --</option>
+                            <option value="TC13-C101">TC13-C101</option>
             <option value="TC13-C102">TC13-C102</option>
             <option value="TC13-C103">TC13-C103</option>
             <option value="TC13-C104">TC13-C104</option>
@@ -119,129 +82,151 @@
             <option value="TC13-D148">TC13-D148</option>
             <option value="TC13-D149">TC13-D149</option>
             <option value="TC13-D150">TC13-D150</option>
-        </select>
+            </select>
+        </div>
+        <div class="controles-der">
+            <label>Risk Appetite (Crypto)</label>
+            <select id="riskSelector" onchange="actualizarLineaRiesgo()">
+                <option value="-10">Conservative (-10%)</option>
+                <option value="-20">Moderate (-20%)</option>
+                <option value="-30">Aggressive (-30%)</option>
+                <option value="-40">High Risk (-40%)</option>
+                <option value="-50">Extreme (-50%)</option>
+            </select>
+        </div>
     </div>
     
-    <!-- Gráfica 1: Drawdown -->
-    <h3 class="chart-title">Curva de Drawdown Histórico</h3>
-    <div class="grafica-wrapper">
-        <canvas id="miGrafica"></canvas>
-    </div>
+    <div class="chart-title">Curva de Drawdown Histórico</div>
+    <div id="contenedorDrawdown" class="caja-grafica"></div>
     
-    <!-- Métricas (Posicionadas en el medio) -->
     <div id="metricasPanel">
         <strong>Métricas del Modelo:</strong> Sharpe: <span id="valSharpe">-</span> | Profit Factor: <span id="valPF">-</span> | Calmar: <span id="valCalmar">-</span>
     </div>
 
-    <!-- Gráfica 2: Equity Curve -->
-    <h3 class="chart-title">Equity Curve/Curva de Capital real</h3>
-    <div class="grafica-wrapper">
-        <canvas id="graficaEquity"></canvas>
-    </div>
+    <div class="chart-title">Equity Curve/Curva de Capital real</div>
+    <div id="contenedorEquity" class="caja-grafica"></div>
 </div>
 
 <script>
-    Chart.register(window['chartjs-plugin-annotation']);
-    let miGrafica;
-    let miGraficaEquity;
+    let lineaDrawdown, lineaEquity;
+    let chartDd, chartEq;
+    let lineaRiesgoActual = null;
+    let lineasManuales = []; 
+    
+    // RASTREADOR GLOBAL DEL TECLADO (Solución al Bug del Shift)
+    let teclaShiftPresionada = false;
+    window.addEventListener('keydown', function(event) { if (event.shiftKey) teclaShiftPresionada = true; });
+    window.addEventListener('keyup', function(event) { if (!event.shiftKey) teclaShiftPresionada = false; });
 
     function iniciarGraficas() {
-        // Inicializar Gráfica de Drawdown
-        const ctx = document.getElementById('miGrafica').getContext('2d');
-        miGrafica = new Chart(ctx, {
-            type: 'line',
-            data: { labels: [], datasets: [{ 
-                label: 'Drawdown', 
-                data: [], 
-                borderColor: '#D32F2F', 
-                backgroundColor: 'rgba(211, 47, 47, 0.1)', 
-                fill: true, tension: 0.1, borderWidth: 1.5,
-                pointRadius: 0, pointHoverRadius: 5
-            }]},
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                scales: { 
-                    x: { grid: { display: false }, ticks: { color: '#888', maxTicksLimit: 12, autoSkip: true } }, 
-                    y: { grid: { display: true, color: '#e0e0e0' }, ticks: { callback: function(value) { return value + '%'; } } } 
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(ctx) { return ' Drawdown: ' + ctx.parsed.y + '%'; } } },
-                    annotation: {
-                        annotations: {
-                            threshold: {
-                                type: 'line', yMin: -10, yMax: -10, borderColor: 'black', borderWidth: 1.5, borderDash: [5, 5],
-                                label: { display: true, content: 'Risk Tolerance (-10%)', position: 'start', backgroundColor: 'transparent', color: 'black', yAdjust: -12, font: { weight: 'bold' } }
-                            }
-                        }
-                    }
-                }
+        const opcionesComunes = {
+            layout: { backgroundColor: '#131722', textColor: '#d1d4dc' },
+            grid: { vertLines: { color: '#2a2e39' }, horzLines: { color: '#2a2e39' } },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            timeScale: { timeVisible: true, borderColor: '#2a2e39' }
+        };
+
+        chartDd = LightweightCharts.createChart(document.getElementById('contenedorDrawdown'), opcionesComunes);
+        chartEq = LightweightCharts.createChart(document.getElementById('contenedorEquity'), opcionesComunes);
+
+        // Curva de Drawdown (Sombreado invertido y punto hueco)
+        lineaDrawdown = chartDd.addBaselineSeries({ 
+            baseValue: { type: 'price', price: 0 }, 
+            bottomLineColor: '#EF5350',
+            bottomFillColor1: 'rgba(239, 83, 80, 0)',   
+            bottomFillColor2: 'rgba(239, 83, 80, 0.4)', 
+            topLineColor: '#EF5350',
+            topFillColor1: 'rgba(239, 83, 80, 0.4)',
+            topFillColor2: 'rgba(239, 83, 80, 0)',
+            lineWidth: 2,
+            crosshairMarkerRadius: 5, 
+            crosshairMarkerBorderColor: '#EF5350', 
+            crosshairMarkerBackgroundColor: '#131722', 
+            crosshairMarkerBorderWidth: 2
+        });
+        
+        // Curva de Equity (Área normal y punto hueco)
+        lineaEquity = chartEq.addAreaSeries({ 
+            lineColor: '#2962FF', topColor: 'rgba(41, 98, 255, 0.4)', bottomColor: 'rgba(41, 98, 255, 0)', lineWidth: 2,
+            crosshairMarkerRadius: 5, 
+            crosshairMarkerBorderColor: '#2962FF', 
+            crosshairMarkerBackgroundColor: '#131722', 
+            crosshairMarkerBorderWidth: 2
+        });
+
+        // Líneas Base Fijas (Grosor 3)
+        lineaDrawdown.createPriceLine({ price: 0, color: '#5d606b', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: false });
+        lineaEquity.createPriceLine({ price: 10000, color: '#5d606b', lineWidth: 3, lineStyle: LightweightCharts.LineStyle.Solid, axisLabelVisible: false });
+
+        actualizarLineaRiesgo();
+
+        // Sincronización Cruzada
+        chartEq.timeScale().subscribeVisibleLogicalRangeChange(range => { chartDd.timeScale().setVisibleLogicalRange(range); });
+        chartDd.timeScale().subscribeVisibleLogicalRangeChange(range => { chartEq.timeScale().setVisibleLogicalRange(range); });
+
+        // OYENTES DE CLIC CON VERIFICACIÓN GLOBAL DEL TECLADO
+        chartEq.subscribeClick(function(param) {
+            if (teclaShiftPresionada && param.point) {
+                const precio = lineaEquity.coordinateToPrice(param.point.y);
+                const nuevaLinea = lineaEquity.createPriceLine({
+                    price: precio, color: '#ffeb3b', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Solid, title: 'Nota'
+                });
+                lineasManuales.push({ serie: lineaEquity, linea: nuevaLinea });
             }
         });
 
-        // Inicializar Gráfica de Equity Curve
-        const ctxEq = document.getElementById('graficaEquity').getContext('2d');
-        miGraficaEquity = new Chart(ctxEq, {
-            type: 'line',
-            data: { labels: [], datasets: [{ 
-                label: 'Capital USDT', 
-                data: [], 
-                borderColor: '#1565C0', // Azul Institucional
-                backgroundColor: 'rgba(21, 101, 192, 0.1)', 
-                fill: true, tension: 0.1, borderWidth: 1.5,
-                pointRadius: 0, pointHoverRadius: 5
-            }]},
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                scales: { 
-                    x: { grid: { display: false }, ticks: { color: '#888', maxTicksLimit: 12, autoSkip: true } }, 
-                    y: { 
-                        min: 0, // Exigencia: Visible desde 0
-                        grid: { display: true, color: '#e0e0e0' }, 
-                        ticks: { stepSize: 2000 } // Exigencia: Subir de 2000 en 2000
-                    } 
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: function(ctx) { return ' Capital: ' + ctx.parsed.y.toLocaleString('en-US') + ' USDT'; } } },
-                    annotation: {
-                        annotations: {
-                            baseCapital: {
-                                type: 'line', yMin: 10000, yMax: 10000, borderColor: 'black', borderWidth: 1.5, borderDash: [5, 5]
-                                // Exigencia: Sin texto en esta línea
-                            }
-                        }
-                    }
-                }
+        chartDd.subscribeClick(function(param) {
+            if (teclaShiftPresionada && param.point) {
+                const precio = lineaDrawdown.coordinateToPrice(param.point.y);
+                const nuevaLinea = lineaDrawdown.createPriceLine({
+                    price: precio, color: '#ffeb3b', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Solid, title: 'Nota'
+                });
+                lineasManuales.push({ serie: lineaDrawdown, linea: nuevaLinea });
             }
         });
     }
 
+    function actualizarLineaRiesgo() {
+        const valorRiesgo = parseFloat(document.getElementById("riskSelector").value);
+        if (lineaRiesgoActual !== null) { lineaDrawdown.removePriceLine(lineaRiesgoActual); }
+        lineaRiesgoActual = lineaDrawdown.createPriceLine({
+            price: valorRiesgo, 
+            color: '#ffb74d', 
+            lineWidth: 2, // Grosor 2 solicitado para la tolerancia de riesgo
+            lineStyle: LightweightCharts.LineStyle.Dashed, 
+            axisLabelVisible: true, 
+            title: 'Risk Tolerance (' + valorRiesgo + '%)'
+        });
+    }
+
+    function limpiarLineasManuales() {
+        lineasManuales.forEach(item => item.serie.removePriceLine(item.linea));
+        lineasManuales = [];
+    }
+
     async function actualizarGrafica() {
         const seleccion = document.getElementById("configSelector").value;
+        if (!seleccion) return;
+
         try {
             const respuesta = await fetch(`datos/${seleccion}.json`);
             const dataJson = await respuesta.json();
             
-            // Actualizar Drawdown
-            miGrafica.data.labels = dataJson.fechas;
-            miGrafica.data.datasets[0].data = dataJson.drawdown;
-            miGrafica.update();
+            lineaDrawdown.setData(dataJson.drawdown_data);
+            lineaEquity.setData(dataJson.equity_data);
             
-            // Actualizar Equity
-            miGraficaEquity.data.labels = dataJson.fechas;
-            miGraficaEquity.data.datasets[0].data = dataJson.equity;
-            miGraficaEquity.update();
-            
-            // Actualizar Panel
+            chartDd.timeScale().fitContent();
+            chartEq.timeScale().fitContent();
+
             document.getElementById('valSharpe').innerText = dataJson.metricas.sharpe;
             document.getElementById('valPF').innerText = dataJson.metricas.profit_factor;
             document.getElementById('valCalmar').innerText = dataJson.metricas.calmar;
-        } catch(e) { console.error("Error cargando datos", e); }
+
+            limpiarLineasManuales();
+
+        } catch(e) { 
+            console.error("Error cargando datos", e);
+        }
     }
 
     window.onload = iniciarGraficas;
