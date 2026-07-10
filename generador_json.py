@@ -14,8 +14,38 @@ for archivo in archivos:
         nombre_base = os.path.basename(archivo)
         codigo = nombre_base.replace('DATA ', '').replace('.xlsx', '').strip()
         
-        df = pd.read_excel(archivo, sheet_name='Trades')
+        # 1. Leer el archivo Excel sin cargar una hoja específica todavía para ver qué hojas tiene
+        xls = pd.ExcelFile(archivo)
+        hojas_disponibles = xls.sheet_names
+        
+        # 2. Buscar la hoja correcta, ya sea 'Trades' u 'Operaciones'
+        hoja_objetivo = None
+        for posible_nombre in ['Trades', 'Operaciones']:
+            if posible_nombre in hojas_disponibles:
+                hoja_objetivo = posible_nombre
+                break
+                
+        if hoja_objetivo is None:
+            print(f"Advertencia: No se encontró la hoja de trades en {nombre_base}. Saltando...")
+            continue # Salta al siguiente archivo si no encuentra ninguna de las dos hojas
+            
+        # 3. Leer la hoja encontrada
+        df = pd.read_excel(xls, sheet_name=hoja_objetivo)
         df.columns = df.columns.str.strip()
+        
+        # 4. Diccionario para traducir/estandarizar columnas al formato original
+        # Si encuentra las claves (izquierda), las renombra a los valores (derecha)
+        mapeo_columnas = {
+            'PyG netas USDT': 'Net PnL USDT',
+            'Rentabilidad %': 'Net PnL %',
+            'PyG acumuladas USDT': 'Cumulative PnL USDT',
+            'PyG acumuladas %': 'Cumulative PnL %',
+            # Puedes agregar más aquí en el futuro si cambian otros nombres
+        }
+        
+        # Renombrar las columnas usando el diccionario
+         
+        df = df.rename(columns=mapeo_columnas)
         
         df = df[df['Tipo'].astype(str).str.contains('Salida', case=False, na=False)].copy()
         
